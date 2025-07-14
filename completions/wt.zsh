@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 #compdef wt
 # Zsh completion for wt (Git Worktree Manager)
 # Install: Place in your $fpath (e.g., /usr/local/share/zsh/site-functions/)
@@ -35,7 +36,7 @@ _wt() {
     _wt_worktrees() {
         local -a worktrees
         if command -v wt &> /dev/null; then
-            worktrees=("${(@f)$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')}")
+            worktrees=( ${(f)"$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')"} )
         fi
         _describe -t worktrees 'worktree' worktrees
     }
@@ -43,7 +44,7 @@ _wt() {
     # Get branches for completion
     _wt_branches() {
         local -a branches
-        branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null)}")
+        branches=( ${(f)"$(git branch --format='%(refname:short)' 2>/dev/null)"} )
         _describe -t branches 'branch' branches
     }
 
@@ -62,7 +63,7 @@ _wt() {
                 'branches:branch name:_wt_branches'
             ;;
         args)
-            case $line[1] in
+            case ${line[1]} in
                 remove|rm|switch|sw)
                     _wt_worktrees
                     ;;
@@ -104,7 +105,7 @@ _wt_sync_all() {
 _wt_worktrees() {
     local -a worktrees
     if command -v wt &> /dev/null; then
-        worktrees=("${(@f)$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')}")
+        worktrees=( ${(f)"$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')"} )
     fi
     _describe -t worktrees 'worktree' worktrees
 }
@@ -112,7 +113,7 @@ _wt_worktrees() {
 # Helper function for branches (reused by utils)
 _wt_branches() {
     local -a branches
-    branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null)}")
+    branches=( ${(f)"$(git branch --format='%(refname:short)' 2>/dev/null)"} )
     _describe -t branches 'branch' branches
 }
 
