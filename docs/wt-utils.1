@@ -1,0 +1,108 @@
+.TH WT-UTILS 1 "December 2024" "wt 1.0.0" "Git Worktree Utilities"
+.SH NAME
+wt-utils \- Utility functions for advanced Git worktree operations
+.SH SYNOPSIS
+.B source
+.I /usr/local/bin/wt-utils
+.PP
+.B wt_sync_all
+.br
+.B wt_diff
+.I worktree1 worktree2
+.br
+.B wt_backup
+.I worktree-name
+.br
+.B wt_merge
+.I source-worktree
+.RI [ target-branch ]
+.SH DESCRIPTION
+.B wt-utils
+provides advanced utility functions for managing Git worktrees created with the
+.BR wt (1)
+command. These functions must be sourced into your shell environment before use.
+.SH FUNCTIONS
+.TP
+.B wt_sync_all
+Synchronize all worktrees with their remote tracking branches. Performs a fetch
+and rebase for each worktree. Worktrees with uncommitted changes will be skipped
+with a warning.
+.TP
+.B wt_diff
+.I worktree1 worktree2
+Show the differences between two worktrees. This displays the git diff between
+the branches associated with the specified worktrees.
+.TP
+.B wt_backup
+.I worktree-name
+Create a backup of the specified worktree by creating a new branch with a
+timestamp suffix and pushing it to the remote repository.
+.TP
+.B wt_merge
+.I source-worktree
+.RI [ target-branch ]
+Merge changes from the source worktree into the target branch. If no target
+branch is specified, 'main' is used. The function switches to the main repository,
+checks out the target branch, and performs the merge.
+.SH INSTALLATION
+Add the following line to your shell configuration file:
+.PP
+For bash (~/.bashrc):
+.nf
+source /usr/local/bin/wt-utils
+.fi
+.PP
+For zsh (~/.zshrc):
+.nf
+source /usr/local/bin/wt-utils
+.fi
+.PP
+For fish (~/.config/fish/config.fish):
+.nf
+source /usr/local/bin/wt-utils
+.fi
+.SH EXAMPLES
+.TP
+Sync all worktrees:
+.B wt_sync_all
+.TP
+Compare two feature branches:
+.B wt_diff feature-auth feature-api
+.TP
+Backup before risky changes:
+.B wt_backup feature-experimental
+.TP
+Merge feature into main:
+.B wt_merge feature-auth
+.TP
+Merge feature into develop:
+.B wt_merge feature-auth develop
+.SH NOTES
+.PP
+All functions operate on worktrees created by the
+.BR wt (1)
+command and expect the standard worktree directory structure.
+.PP
+The functions will fail gracefully if:
+.IP \(bu 2
+Not in a Git repository
+.IP \(bu 2
+Specified worktrees don't exist
+.IP \(bu 2
+Network operations fail (for sync/backup)
+.SH ENVIRONMENT
+These functions use the same environment and configuration as the main
+.BR wt (1)
+command.
+.SH SEE ALSO
+.BR wt (1),
+.BR git (1),
+.BR git-worktree (1)
+.SH BUGS
+Report bugs at https://github.com/kniru/wt/issues
+.SH AUTHOR
+Written by Claude and the wt community.
+.SH COPYRIGHT
+Copyright (C) 2024 Kniru. MIT License.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

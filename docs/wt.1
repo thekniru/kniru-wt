@@ -1,0 +1,132 @@
+.TH WT 1 "December 2024" "wt 1.0.0" "Git Worktree Manager"
+.SH NAME
+wt \- World-class CLI tool for managing Git worktrees
+.SH SYNOPSIS
+.B wt
+.I COMMAND
+.RI [ OPTIONS ]
+.br
+.B wt
+.I branch-name
+.RI [ OPTIONS ]
+.SH DESCRIPTION
+.B wt
+is a powerful command-line tool that simplifies working with Git worktrees,
+making it easy to work on multiple branches simultaneously without the overhead
+of switching branches or stashing changes.
+.PP
+Worktrees are stored in a dedicated directory structure adjacent to your main
+repository, keeping your workspace organized and clean.
+.SH COMMANDS
+.TP
+.I branch-name
+Create a new worktree with the specified branch name. If the branch doesn't exist,
+it will be created from the base branch.
+.TP
+.B list, ls
+List all worktrees for the current repository, showing their branch names,
+commit hashes, and paths.
+.TP
+.B remove, rm
+.I branch-name
+Remove the specified worktree. Will prompt for branch deletion.
+.TP
+.B switch, sw
+.I branch-name
+Open the specified worktree in your configured editor.
+.TP
+.B clean
+Remove all worktrees that have deleted or missing branches.
+.TP
+.B status, st
+Show the status of all worktrees, including uncommitted changes.
+.TP
+.B help
+Display usage information and available commands.
+.SH OPTIONS
+.TP
+.BR \-b ", " \-\-base " " \fIbranch\fR
+Specify the base branch to create the new worktree from. Default is 'main'.
+.TP
+.BR \-e ", " \-\-editor " " \fIcommand\fR
+Specify the editor command to use when opening worktrees. Default is 'cursor'.
+.TP
+.BR \-n ", " \-\-no\-open
+Create the worktree without opening it in an editor.
+.TP
+.BR \-f ", " \-\-force
+Force remove a worktree even if it has uncommitted changes.
+.TP
+.BR \-h ", " \-\-help
+Show help message and exit.
+.SH CONFIGURATION
+Configuration can be set in
+.I ~/.wtrc
+file:
+.PP
+.nf
+# Default base branch for new worktrees
+DEFAULT_BASE_BRANCH="develop"
+
+# Default editor command
+EDITOR_COMMAND="code"
+
+# Worktrees directory suffix
+WORKTREES_SUFFIX="-worktrees"
+.fi
+.SH EXAMPLES
+.TP
+Create a new feature worktree:
+.B wt feature-auth
+.TP
+Create worktree from develop branch:
+.B wt feature-api -b develop
+.TP
+List all worktrees:
+.B wt list
+.TP
+Remove a worktree:
+.B wt remove feature-auth
+.TP
+Force remove with uncommitted changes:
+.B wt remove feature-auth -f
+.TP
+Switch to a worktree:
+.B wt switch feature-api
+.SH DIRECTORY STRUCTURE
+Worktrees are organized in a directory adjacent to your main repository:
+.PP
+.nf
+parent-directory/
+├── my-project/          (main repository)
+└── my-project-worktrees/
+    ├── feature-auth/
+    ├── feature-api/
+    └── bugfix-login/
+.fi
+.SH ENVIRONMENT
+.TP
+.B EDITOR
+Used as default editor if EDITOR_COMMAND is not set in configuration.
+.SH FILES
+.TP
+.I ~/.wtrc
+User configuration file
+.TP
+.I /usr/local/bin/wt
+Main executable
+.TP
+.I /usr/local/bin/wt-utils
+Utility functions for advanced operations
+.SH SEE ALSO
+.BR wt-utils (1),
+.BR git (1),
+.BR git-worktree (1)
+.SH BUGS
+Report bugs at https://github.com/kniru/wt/issues
+.SH AUTHOR
+Written by Claude and the wt community.
+.SH COPYRIGHT
+Copyright (C) 2024 Kniru. MIT License.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.

@@ -1,0 +1,20 @@
+# Example wt configuration file
+# Copy this to ~/.wtrc and customize as needed
+
+# Default base branch for new worktrees
+# DEFAULT_BASE_BRANCH="develop"
+
+# Default editor command to open worktrees
+# EDITOR_COMMAND="code"
+
+# Suffix for worktrees directory
+# WORKTREES_SUFFIX="-worktrees"
+
+# Additional editor options (passed as arguments)
+# EDITOR_OPTIONS="--new-window"
+
+# Auto-sync worktrees on creation (requires wt-utils)
+# AUTO_SYNC=true
+
+# Auto-prune deleted worktrees on list/status
+# AUTO_PRUNE=true

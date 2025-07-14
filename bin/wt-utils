@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+# Git Worktree Utilities (wt-utils)
+# Additional helper functions for git worktree management
+# Author: Claude
+# Version: 1.0.0
+
+# Color codes
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Function to sync all worktrees with remote
+wt_sync_all() {
+    echo -e "${BLUE}Syncing all worktrees with remote...${NC}"
+    
+    git worktree list --porcelain | grep "^worktree" | awk '{print $2}' | while read -r worktree_path; do
+        if [[ -d "$worktree_path" ]]; then
+            local worktree_name=$(basename "$worktree_path")
+            echo -e "${YELLOW}Syncing $worktree_name...${NC}"
+            (
+                cd "$worktree_path" && \
+                git fetch origin && \
+                git pull --rebase origin $(git rev-parse --abbrev-ref HEAD) 2>/dev/null || \
+                echo "  ⚠️  Could not sync (might have local changes)"
+            )
+        fi
+    done
+    
+    echo -e "${GREEN}✓ Sync complete${NC}"
+}
+
+# Function to show diff between worktrees
+wt_diff() {
+    local worktree1="$1"
+    local worktree2="$2"
+    
+    if [[ -z "$worktree1" ]] || [[ -z "$worktree2" ]]; then
+        echo "Usage: wt-diff <worktree1> <worktree2>"
+        return 1
+    fi
+    
+    local main_repo=$(git worktree list --porcelain | grep "^worktree" | head -1 | awk '{print $2}')
+    local parent_dir=$(dirname "$main_repo")
+    local repo_name=$(basename "$main_repo")
+    
+    local path1="$parent_dir/${repo_name}-worktrees/$worktree1"
+    local path2="$parent_dir/${repo_name}-worktrees/$worktree2"
+    
+    if [[ ! -d "$path1" ]]; then
+        echo "Worktree '$worktree1' not found"
+        return 1
+    fi
+    
+    if [[ ! -d "$path2" ]]; then
+        echo "Worktree '$worktree2' not found"
+        return 1
+    fi
+    
+    echo -e "${BLUE}Comparing $worktree1...$worktree2${NC}"
+    git diff "${worktree1}...${worktree2}"
+}
+
+# Function to backup a worktree
+wt_backup() {
+    local worktree_name="$1"
+    
+    if [[ -z "$worktree_name" ]]; then
+        echo "Usage: wt-backup <worktree-name>"
+        return 1
+    fi
+    
+    local main_repo=$(git worktree list --porcelain | grep "^worktree" | head -1 | awk '{print $2}')
+    local parent_dir=$(dirname "$main_repo")
+    local repo_name=$(basename "$main_repo")
+    local worktree_path="$parent_dir/${repo_name}-worktrees/$worktree_name"
+    
+    if [[ ! -d "$worktree_path" ]]; then
+        echo "Worktree '$worktree_name' not found"
+        return 1
+    fi
+    
+    local backup_name="${worktree_name}-backup-$(date +%Y%m%d-%H%M%S)"
+    
+    echo -e "${BLUE}Creating backup branch: $backup_name${NC}"
+    (
+        cd "$worktree_path" && \
+        git checkout -b "$backup_name" && \
+        git push -u origin "$backup_name"
+    )
+    
+    echo -e "${GREEN}✓ Backup created: $backup_name${NC}"
+}
+
+# Function to merge worktree changes
+wt_merge() {
+    local source_worktree="$1"
+    local target_branch="${2:-main}"
+    
+    if [[ -z "$source_worktree" ]]; then
+        echo "Usage: wt-merge <source-worktree> [target-branch]"
+        return 1
+    fi
+    
+    echo -e "${BLUE}Merging $source_worktree into $target_branch${NC}"
+    
+    # Save current location
+    local current_dir=$(pwd)
+    
+    # Get main repo path
+    local main_repo=$(git worktree list --porcelain | grep "^worktree" | head -1 | awk '{print $2}')
+    
+    # Switch to main repo
+    cd "$main_repo"
+    
+    # Checkout target branch
+    git checkout "$target_branch"
+    
+    # Merge the source branch
+    if git merge "$source_worktree"; then
+        echo -e "${GREEN}✓ Successfully merged $source_worktree into $target_branch${NC}"
+        echo "Don't forget to push the changes: git push origin $target_branch"
+    else
+        echo -e "${YELLOW}⚠️  Merge conflict detected. Please resolve conflicts and commit.${NC}"
+    fi
+    
+    # Return to original directory
+    cd "$current_dir"
+}
+
+# Export functions for use in shell
+export -f wt_sync_all
+export -f wt_diff
+export -f wt_backup
+export -f wt_merge
+
+# If script is run directly, show usage
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    echo -e "${BLUE}Git Worktree Utilities${NC}"
+    echo ""
+    echo "Available functions (source this file to use):"
+    echo "  wt_sync_all              - Sync all worktrees with remote"
+    echo "  wt_diff <wt1> <wt2>      - Show diff between two worktrees"
+    echo "  wt_backup <worktree>     - Create a backup branch of a worktree"
+    echo "  wt_merge <worktree> [target] - Merge worktree into target branch (default: main)"
+    echo ""
+    echo "To use these functions, add to your .zshrc:"
+    echo "  source /Users/aayush/bin/wt-utils"
+fi

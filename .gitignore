@@ -1,0 +1,23 @@
+# Build artifacts
+dist/
+*.tar.gz
+
+# Test artifacts
+test-repo/
+test-repo-worktrees/
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.bak
