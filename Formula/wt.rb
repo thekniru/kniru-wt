@@ -44,7 +44,7 @@ class Wt < Formula
     system "#{bin}/wt", "help"
     
     # Test in a git repo
-    system "git", "init", "test-repo"
+    system "git", "init", "-b", "main", "test-repo"
     Dir.chdir("test-repo") do
       system "git", "config", "user.email", "test@example.com"
       system "git", "config", "user.name", "Test User"

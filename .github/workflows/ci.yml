@@ -39,7 +39,7 @@ jobs:
       run: |
         mkdir test-repo
         cd test-repo
-        git init
+        git init -b main
         echo "test" > README.md
         git add README.md
         git commit -m "Initial commit"
