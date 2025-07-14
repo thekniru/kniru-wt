@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release archive
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          make release VERSION=$VERSION
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Calculate SHA256
+        run: |
+          SHA256=$(sha256sum wt-${{ env.VERSION }}.tar.gz | awk '{print $1}')
+          echo "SHA256=$SHA256" >> $GITHUB_ENV
+          echo "Archive SHA256: $SHA256"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # Generate changelog
+          if [ -n "$PREV_TAG" ]; then
+            echo "## What's Changed" > release_notes.md
+            echo "" >> release_notes.md
+            git log --pretty=format:"* %s (%h)" $PREV_TAG..HEAD >> release_notes.md
+          else
+            echo "Initial release" > release_notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: wt-${{ env.VERSION }}.tar.gz
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Homebrew Formula
+        run: |
+          # Clone the repo (same repo in this case)
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          
+          # Update the formula
+          sed -i "s|url \".*\"|url \"https://github.com/${{ github.repository }}/archive/${{ env.VERSION }}.tar.gz\"|" Formula/wt.rb
+          sed -i "s|sha256 \".*\"|sha256 \"${{ env.SHA256 }}\"|" Formula/wt.rb
+          
+          # Extract version number without 'v' prefix
+          VERSION_NUM=${VERSION#v}
+          sed -i "s|version \".*\"|version \"$VERSION_NUM\"|" Formula/wt.rb
+
+      - name: Create Pull Request for Formula Update
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update wt formula to ${{ env.VERSION }}"
+          title: "Update wt formula to ${{ env.VERSION }}"
+          body: |
+            Automated update of the Homebrew formula for wt ${{ env.VERSION }}.
+            
+            SHA256: `${{ env.SHA256 }}`
+            
+            This PR was automatically created by the release workflow.
+          branch: update-formula-${{ env.VERSION }}
+          delete-branch: true

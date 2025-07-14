@@ -1,0 +1,59 @@
+project_name: wt
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - skip: true
+
+archives:
+  - id: wt
+    name_template: "{{ .ProjectName }}-{{ .Version }}"
+    format: tar.gz
+    files:
+      - bin/*
+      - completions/*
+      - docs/*.1
+      - README.md
+      - LICENSE
+      - .wtconfig.example
+    
+release:
+  github:
+    owner: thekniru
+    name: kniru-wt
+  
+  draft: false
+  prerelease: auto
+  
+  name_template: "{{.ProjectName}} v{{.Version}}"
+  
+  header: |
+    ## What's Changed
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+  groups:
+    - title: 'Features'
+      regexp: "^feat"
+      order: 0
+    - title: 'Bug Fixes'
+      regexp: "^fix"
+      order: 1
+    - title: 'Performance'
+      regexp: "^perf"
+      order: 2
+    - title: 'Other'
+      order: 999
