@@ -2,7 +2,7 @@ class Wt < Formula
   desc "World-class CLI tool for managing Git worktrees"
   homepage "https://github.com/thekniru/kniru-wt"
   url "https://github.com/thekniru/kniru-wt/archive/v1.0.0.tar.gz"
-  sha256 "7d5fa31a3f7c7736b85fa2c03efa12e0c030dbf689ce3f018ebf875fa9bcab74"
+  sha256 "18a3807dad83f7c824a56d6edc18f895ed70fc25c2e762dfcce4213fc3c4206b"
   license "Apache-2.0"
   head "https://github.com/thekniru/kniru-wt.git", branch: "main"
 
