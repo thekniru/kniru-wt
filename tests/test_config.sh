@@ -72,7 +72,7 @@ EOF
 # Test 2: Parse TOML arrays
 test_parse_toml_arrays() {
     # Skip this test on bash < 4.0 due to regex limitations
-    if [[ "${BASH_VERSION}" < "4.0" ]]; then
+    if [[ "${BASH_VERSION%%.*}" -lt 4 ]]; then
         echo "SKIPPED (requires bash 4.0+)"
         return 0
     fi

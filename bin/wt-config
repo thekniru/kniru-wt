@@ -195,14 +195,14 @@ copy_worktree_files() {
     fi
     
     # Add exclude patterns from config
-    if [[ -n "${WT_CONFIG_COPY_EXCLUDE[@]}" ]]; then
+    if [[ "${#WT_CONFIG_COPY_EXCLUDE[@]}" -gt 0 ]]; then
         for pattern in "${WT_CONFIG_COPY_EXCLUDE[@]}"; do
             rsync_args+=("--exclude=$pattern")
         done
     fi
     
     # Copy included files
-    if [[ -n "${WT_CONFIG_COPY_INCLUDE[@]}" ]]; then
+    if [[ "${#WT_CONFIG_COPY_INCLUDE[@]}" -gt 0 ]]; then
         echo "Copying additional files to worktree..."
         for pattern in "${WT_CONFIG_COPY_INCLUDE[@]}"; do
             # Check if pattern matches any files
@@ -210,7 +210,7 @@ copy_worktree_files() {
                 for file in $source_dir/$pattern; do
                     if [[ -e "$file" ]]; then
                         # Get relative path
-                        rel_path="${file#$source_dir/}"
+                        rel_path="${file#"$source_dir"/}"
                         target_file="$target_dir/$rel_path"
                         
                         # Create target directory if needed

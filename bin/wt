@@ -194,7 +194,7 @@ create_worktree() {
     
     # Copy non-tracked files if configured
     if type copy_worktree_files &>/dev/null; then
-        if [[ -n "${WT_CONFIG_COPY_INCLUDE[@]}" ]] || [[ -n "${WT_PROJECT_CONFIG_PATH}" ]]; then
+        if [[ "${#WT_CONFIG_COPY_INCLUDE[@]}" -gt 0 ]] || [[ -n "${WT_PROJECT_CONFIG_PATH}" ]]; then
             print_info "Copying additional files to worktree..."
             copy_worktree_files "$main_repo_path" "$worktree_path"
         fi
@@ -498,7 +498,7 @@ show_config() {
     echo "  Default editor: $(get_config_value 'global.default_editor' '$EDITOR_COMMAND')"
     echo "  Auto open: $(get_config_value 'global.auto_open' 'true')"
     
-    if [[ -n "${WT_CONFIG_COPY_INCLUDE[@]}" ]]; then
+    if [[ "${#WT_CONFIG_COPY_INCLUDE[@]}" -gt 0 ]]; then
         echo ""
         echo "  Files to copy:"
         for file in "${WT_CONFIG_COPY_INCLUDE[@]}"; do
@@ -506,7 +506,7 @@ show_config() {
         done
     fi
     
-    if [[ -n "${WT_CONFIG_COPY_EXCLUDE[@]}" ]]; then
+    if [[ "${#WT_CONFIG_COPY_EXCLUDE[@]}" -gt 0 ]]; then
         echo ""
         echo "  Patterns to exclude:"
         for pattern in "${WT_CONFIG_COPY_EXCLUDE[@]}"; do

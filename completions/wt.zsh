@@ -35,7 +35,7 @@ _wt() {
     _wt_worktrees() {
         local -a worktrees
         if command -v wt &> /dev/null; then
-            worktrees=(${(f)"$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^*')"})
+            worktrees=("${(@f)$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')}")
         fi
         _describe -t worktrees 'worktree' worktrees
     }
@@ -43,7 +43,7 @@ _wt() {
     # Get branches for completion
     _wt_branches() {
         local -a branches
-        branches=(${(f)"$(git branch --format='%(refname:short)' 2>/dev/null)"})
+        branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null)}")
         _describe -t branches 'branch' branches
     }
 
@@ -58,7 +58,7 @@ _wt() {
         command)
             # First argument can be a command or a branch name for creation
             _alternative \
-                'commands:command:((${commands[@]}))' \
+                "commands:command:compadd -a commands" \
                 'branches:branch name:_wt_branches'
             ;;
         args)
@@ -71,7 +71,7 @@ _wt() {
                     ;;
                 *)
                     # Branch creation - show options
-                    _arguments $options
+                    _arguments "${options[@]}"
                     ;;
             esac
             ;;
@@ -104,7 +104,7 @@ _wt_sync_all() {
 _wt_worktrees() {
     local -a worktrees
     if command -v wt &> /dev/null; then
-        worktrees=(${(f)"$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^*')"})
+        worktrees=("${(@f)$(wt list 2>/dev/null | awk 'NR>2 {print $1}' | grep -v '^\*')}")
     fi
     _describe -t worktrees 'worktree' worktrees
 }
@@ -112,7 +112,7 @@ _wt_worktrees() {
 # Helper function for branches (reused by utils)
 _wt_branches() {
     local -a branches
-    branches=(${(f)"$(git branch --format='%(refname:short)' 2>/dev/null)"})
+    branches=("${(@f)$(git branch --format='%(refname:short)' 2>/dev/null)}")
     _describe -t branches 'branch' branches
 }
 
