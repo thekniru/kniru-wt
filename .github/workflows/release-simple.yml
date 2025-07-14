@@ -66,15 +66,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout clean copy for formula update
+        uses: actions/checkout@v4
+        with:
+          path: formula-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Update Homebrew Formula
+        working-directory: formula-repo
         run: |
           # Setup git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Create new branch
-          BRANCH="formula-update-${{ steps.get_version.outputs.VERSION }}"
-          git checkout -b $BRANCH
           
           # Update formula
           VERSION=${{ steps.get_version.outputs.VERSION }}
@@ -87,19 +90,14 @@ jobs:
           
           # Remove backup file
           rm -f Formula/wt.rb.bak
-          
-          # Commit changes
-          git add Formula/wt.rb
-          git commit -m "formula: update to ${VERSION}"
-          
-          # Push branch
-          git push origin $BRANCH
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          path: formula-repo
           branch: formula-update-${{ steps.get_version.outputs.VERSION }}
+          commit-message: "formula: update to ${{ steps.get_version.outputs.VERSION }}"
           title: "formula: update to ${{ steps.get_version.outputs.VERSION }}"
           body: |
             Updates the Homebrew formula to ${{ steps.get_version.outputs.VERSION }}.
