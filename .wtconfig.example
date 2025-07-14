@@ -1,0 +1,130 @@
+# Git Worktree Manager Configuration
+# Place this file as .wtconfig in your project root
+
+# Global settings
+[global]
+# Default branch to create new worktrees from
+default_branch = "main"
+
+# Default editor to open worktrees in
+default_editor = "cursor"
+
+# Whether to automatically open worktrees after creation
+auto_open = true
+
+# File copying configuration
+[copy]
+# Files and patterns to include when creating new worktrees
+# These files will be copied from the source worktree
+include = [
+    # Environment files
+    ".env",
+    ".env.local",
+    ".env.development",
+    
+    # Build artifacts that aren't tracked
+    ".astro",
+    
+    # Local configuration
+    "*.local",
+    "local.config.*",
+    
+    # Docker volumes or data
+    "docker-data/",
+    
+    # IDE configurations
+    ".vscode/settings.json",
+    ".idea/workspace.xml",
+]
+
+# Patterns to exclude when copying
+# These follow .gitignore syntax
+exclude = [
+    # Logs
+    "*.log",
+    "logs/",
+    
+    # Dependencies
+    "node_modules/",
+    "vendor/",
+    ".pnp.*",
+    
+    # Build outputs
+    "dist/",
+    "build/",
+    "out/",
+    ".next/",
+    
+    # Cache directories
+    ".cache/",
+    ".turbo/",
+    ".parcel-cache/",
+    
+    # Test coverage
+    "coverage/",
+    ".nyc_output/",
+    
+    # OS files
+    ".DS_Store",
+    "Thumbs.db",
+]
+
+# Whether to respect .gitignore patterns when copying
+use_gitignore = true
+
+# Worktree-specific settings
+[worktree]
+# Naming pattern for worktree directories
+# Available variables: {branch}, {date}, {user}
+naming_pattern = "{branch}"
+
+# Whether to track the remote branch
+track_remote = true
+
+# Whether to fetch before creating worktree
+fetch_before_create = true
+
+# Templates for different types of branches
+[[templates]]
+name = "feature"
+branch_prefix = "feature/"
+base_branch = "develop"
+copy_include = [
+    ".env.development",
+    "docker-compose.dev.yml",
+]
+
+[[templates]]
+name = "hotfix"
+branch_prefix = "hotfix/"
+base_branch = "main"
+copy_include = [
+    ".env.production",
+]
+
+[[templates]]
+name = "release"
+branch_prefix = "release/"
+base_branch = "develop"
+copy_include = [
+    ".env.staging",
+    "docker-compose.staging.yml",
+]
+
+# Hook scripts (optional)
+[hooks]
+# Script to run after creating a worktree
+post_create = """
+#!/bin/bash
+echo "Setting up new worktree..."
+if [ -f package.json ]; then
+    npm install
+fi
+"""
+
+# Script to run before removing a worktree
+pre_remove = """
+#!/bin/bash
+echo "Cleaning up worktree..."
+# Add any cleanup commands here
+"""
