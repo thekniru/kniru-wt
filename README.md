@@ -9,9 +9,11 @@ A world-class CLI tool for managing Git worktrees with an emphasis on agentic co
 - **Editor Integration**: Opens worktrees directly in your preferred editor (defaults to Cursor)
 - **Comprehensive Management**: List, switch, remove, and clean up worktrees easily
 - **Status Overview**: View all worktrees with their branches and uncommitted changes
+- **Advanced Configuration**: Project-level `.wtconfig` files for customizing behavior
+- **File Syncing**: Automatically copy non-tracked files (env files, configs) to new worktrees
+- **Hook Support**: Run custom scripts on worktree creation and removal
 - **Utility Functions**: Sync, diff, backup, and merge worktrees with helper commands
 - **Shell Completions**: Full support for bash, zsh, and fish shells
-- **Configurable**: Customize default branches, editor commands, and more
 
 ## Installation
 
@@ -95,7 +97,49 @@ source $(brew --prefix)/bin/wt-utils
 
 ## Configuration
 
-Create a `~/.wtrc` file to customize defaults:
+### Quick Start
+
+Initialize a project configuration:
+
+```bash
+wt init  # Creates .wtconfig in your project
+```
+
+### Project Configuration (.wtconfig)
+
+`wt` now supports powerful project-level configuration using TOML format:
+
+```toml
+# .wtconfig
+[global]
+default_branch = "main"
+default_editor = "cursor"
+auto_open = true
+
+[copy]
+# Files to copy to new worktrees
+include = [
+    ".env",
+    ".env.local",
+    "docker-compose.override.yml",
+    ".astro/",  # Build caches
+]
+
+exclude = [
+    "node_modules/",
+    "*.log",
+    "dist/",
+]
+
+# Respect .gitignore patterns
+use_gitignore = true
+```
+
+See [Configuration Guide](docs/CONFIGURATION.md) for detailed documentation.
+
+### Global Configuration (~/.wtrc)
+
+Create a `~/.wtrc` file for user-level defaults:
 
 ```bash
 # Default base branch for new worktrees

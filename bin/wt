@@ -23,10 +23,29 @@ DEFAULT_BASE_BRANCH="main"  # Default branch to create worktrees from
 EDITOR_COMMAND="cursor"     # Default editor command
 WORKTREES_SUFFIX="-worktrees"  # Suffix for worktrees directory
 
+# Get the directory of this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source configuration module
+if [[ -f "$SCRIPT_DIR/wt-config" ]]; then
+    source "$SCRIPT_DIR/wt-config"
+else
+    echo "Warning: wt-config module not found" >&2
+fi
+
 # Load user configuration if exists
 CONFIG_FILE="$HOME/.wtrc"
 if [[ -f "$CONFIG_FILE" ]]; then
     source "$CONFIG_FILE"
+fi
+
+# Merge all configurations (global and project-level)
+if type merge_configs &>/dev/null; then
+    merge_configs
+    
+    # Update defaults from config
+    DEFAULT_BASE_BRANCH=$(get_config_value "global.default_branch" "$DEFAULT_BASE_BRANCH")
+    EDITOR_COMMAND=$(get_config_value "global.default_editor" "$EDITOR_COMMAND")
 fi
 
 # Function to display usage information
@@ -45,6 +64,8 @@ $(echo -e "${GREEN}COMMANDS:${NC}")
     wt switch <branch-name>       Switch to an existing worktree
     wt clean                      Remove all worktrees with deleted branches
     wt status                     Show status of all worktrees
+    wt init                       Initialize a .wtconfig file in the current project
+    wt config                     Show current configuration
     wt help                       Show this help message
 
 $(echo -e "${GREEN}OPTIONS:${NC}")
@@ -171,8 +192,24 @@ create_worktree() {
     
     print_success "Created worktree at: $worktree_path"
     
+    # Copy non-tracked files if configured
+    if type copy_worktree_files &>/dev/null; then
+        if [[ -n "${WT_CONFIG_COPY_INCLUDE[@]}" ]] || [[ -n "${WT_PROJECT_CONFIG_PATH}" ]]; then
+            print_info "Copying additional files to worktree..."
+            copy_worktree_files "$main_repo_path" "$worktree_path"
+        fi
+    fi
+    
+    # Run post-create hook if defined
+    local post_create_hook=$(get_config_value "hooks.post_create" "")
+    if [[ -n "$post_create_hook" ]]; then
+        print_info "Running post-create hook..."
+        (cd "$worktree_path" && eval "$post_create_hook")
+    fi
+    
     # Open in editor if requested
-    if [[ "$open_editor" == "true" ]]; then
+    local auto_open=$(get_config_value "global.auto_open" "true")
+    if [[ "$open_editor" == "true" ]] && [[ "$auto_open" == "true" ]]; then
         print_info "Opening worktree in $EDITOR_COMMAND"
         $EDITOR_COMMAND "$worktree_path" &
     fi
@@ -225,6 +262,13 @@ remove_worktree() {
     if [[ ! -d "$worktree_path" ]]; then
         print_error "Worktree '$branch_name' does not exist"
         exit 1
+    fi
+    
+    # Run pre-remove hook if defined
+    local pre_remove_hook=$(get_config_value "hooks.pre_remove" "")
+    if [[ -n "$pre_remove_hook" ]]; then
+        print_info "Running pre-remove hook..."
+        (cd "$worktree_path" && eval "$pre_remove_hook")
     fi
     
     # Remove the worktree
@@ -354,6 +398,123 @@ show_status() {
     print_info "* = current worktree"
 }
 
+# Function to initialize config file
+init_config() {
+    local config_file=".wtconfig"
+    
+    # Check if config already exists
+    if [[ -f "$config_file" ]]; then
+        print_warning "Configuration file $config_file already exists"
+        read -p "Do you want to overwrite it? (y/N) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 0
+        fi
+    fi
+    
+    # Check if example config exists in script directory
+    local example_config="$SCRIPT_DIR/../.wtconfig.example"
+    if [[ -f "$example_config" ]]; then
+        cp "$example_config" "$config_file"
+        print_success "Created $config_file from example template"
+    else
+        # Create a basic config file
+        cat > "$config_file" << 'EOF'
+# Git Worktree Manager Configuration
+# Place this file as .wtconfig in your project root
+
+# Global settings
+[global]
+# Default branch to create new worktrees from
+default_branch = "main"
+
+# Default editor to open worktrees in
+default_editor = "cursor"
+
+# Whether to automatically open worktrees after creation
+auto_open = true
+
+# File copying configuration
+[copy]
+# Files and patterns to include when creating new worktrees
+# These files will be copied from the source worktree
+include = [
+    # Environment files
+    ".env",
+    ".env.local",
+    
+    # Add your project-specific files here
+]
+
+# Patterns to exclude when copying
+exclude = [
+    # Dependencies
+    "node_modules/",
+    
+    # Build outputs
+    "dist/",
+    "build/",
+    
+    # Logs
+    "*.log",
+]
+
+# Whether to respect .gitignore patterns when copying
+use_gitignore = true
+EOF
+        print_success "Created $config_file with default settings"
+    fi
+    
+    print_info "Edit $config_file to customize your worktree settings"
+}
+
+# Function to show current configuration
+show_config() {
+    print_info "Configuration hierarchy:"
+    echo ""
+    
+    # Show global config
+    if [[ -f "$HOME/.wtrc" ]]; then
+        echo "  1. Global config: $HOME/.wtrc"
+    else
+        echo "  1. Global config: (not found)"
+    fi
+    
+    # Show project config
+    if [[ -n "${WT_PROJECT_CONFIG_PATH}" ]]; then
+        echo "  2. Project config: ${WT_PROJECT_CONFIG_PATH}"
+    else
+        local project_config=$(find_project_config "$(pwd)")
+        if [[ -n "$project_config" ]]; then
+            echo "  2. Project config: $project_config"
+        else
+            echo "  2. Project config: (not found)"
+        fi
+    fi
+    
+    echo ""
+    print_info "Current settings:"
+    echo "  Default branch: $(get_config_value 'global.default_branch' '$DEFAULT_BASE_BRANCH')"
+    echo "  Default editor: $(get_config_value 'global.default_editor' '$EDITOR_COMMAND')"
+    echo "  Auto open: $(get_config_value 'global.auto_open' 'true')"
+    
+    if [[ -n "${WT_CONFIG_COPY_INCLUDE[@]}" ]]; then
+        echo ""
+        echo "  Files to copy:"
+        for file in "${WT_CONFIG_COPY_INCLUDE[@]}"; do
+            echo "    - $file"
+        done
+    fi
+    
+    if [[ -n "${WT_CONFIG_COPY_EXCLUDE[@]}" ]]; then
+        echo ""
+        echo "  Patterns to exclude:"
+        for pattern in "${WT_CONFIG_COPY_EXCLUDE[@]}"; do
+            echo "    - $pattern"
+        done
+    fi
+}
+
 # Main function to parse arguments and execute commands
 main() {
     # Check if no arguments provided
@@ -409,6 +570,12 @@ main() {
             ;;
         "status"|"st")
             show_status
+            ;;
+        "init")
+            init_config
+            ;;
+        "config")
+            show_config
             ;;
         *)
             # Treat as branch name for creating worktree
