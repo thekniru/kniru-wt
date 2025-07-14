@@ -18,8 +18,14 @@ A world-class CLI tool for managing Git worktrees with an emphasis on agentic co
 ### Via Homebrew (Recommended)
 
 ```bash
-brew tap thekniru/kniru-wt
+brew tap thekniru/kniru-wt https://github.com/thekniru/kniru-wt
 brew install wt
+```
+
+Or install directly:
+
+```bash
+brew install https://raw.githubusercontent.com/thekniru/kniru-wt/main/Formula/wt.rb
 ```
 
 This will install:
