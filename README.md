@@ -18,7 +18,7 @@ A world-class CLI tool for managing Git worktrees with an emphasis on agentic co
 ### Via Homebrew (Recommended)
 
 ```bash
-brew tap kniru/wt
+brew tap thekniru/kniru-wt
 brew install wt
 ```
 
@@ -31,8 +31,8 @@ This will install:
 ### Manual Installation
 
 ```bash
-git clone https://github.com/kniru/wt.git
-cd wt
+git clone https://github.com/thekniru/kniru-wt.git
+cd kniru-wt
 make install
 ```
 
@@ -185,10 +185,10 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/kniru/wt/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/kniru/wt/discussions)
+- **Issues**: [GitHub Issues](https://github.com/thekniru/kniru-wt/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/thekniru/kniru-wt/discussions)
 - **Documentation**: `man wt` or `wt help`

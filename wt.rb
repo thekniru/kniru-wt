@@ -1,10 +1,10 @@
 class Wt < Formula
   desc "World-class CLI tool for managing Git worktrees"
-  homepage "https://github.com/kniru/wt"
-  url "https://github.com/kniru/wt/archive/v1.0.0.tar.gz"
+  homepage "https://github.com/thekniru/kniru-wt"
+  url "https://github.com/thekniru/kniru-wt/archive/v1.0.0.tar.gz"
   sha256 "PLACEHOLDER_SHA256"
-  license "MIT"
-  head "https://github.com/kniru/wt.git", branch: "main"
+  license "Apache-2.0"
+  head "https://github.com/thekniru/kniru-wt.git", branch: "main"
 
   depends_on "git"
 

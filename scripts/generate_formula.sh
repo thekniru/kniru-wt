@@ -6,7 +6,7 @@
 set -euo pipefail
 
 VERSION="${1:-$(cat VERSION)}"
-REPO_URL="https://github.com/kniru/wt"
+REPO_URL="https://github.com/thekniru/kniru-wt"
 TARBALL_URL="${REPO_URL}/archive/v${VERSION}.tar.gz"
 
 # Calculate SHA256 (this would be done after creating the release)

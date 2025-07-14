@@ -2,7 +2,8 @@
 
 # Git Worktree Utilities (wt-utils)
 # Additional helper functions for git worktree management
-# Author: Claude
+# Copyright 2024 Kniru
+# Licensed under the Apache License, Version 2.0
 # Version: 1.0.0
 
 # Color codes

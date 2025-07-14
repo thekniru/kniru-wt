@@ -2,7 +2,8 @@
 
 # Git Worktree Manager (wt)
 # A powerful CLI tool for managing git worktrees efficiently
-# Author: Claude
+# Copyright 2024 Kniru
+# Licensed under the Apache License, Version 2.0
 # Version: 1.0.0
 
 # Enable strict error handling
